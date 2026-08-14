@@ -1,0 +1,49 @@
+name: "Docs-as-Code Quality Gate & ContentOps CI"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  doc-health-check:
+    name: "Validate Technical Documentation & Taxonomy"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Set up Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "Install Dependencies"
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: "Run ContentOps Linter & Quality Gate (Strict Mode)"
+        run: |
+          python doc_health_check.py --path docs/valid --strict --offline --json-output lint-report.json
+
+      - name: "Generate RAG Semantic Chunks Index (H2/H3 Slicing)"
+        run: |
+          python doc_health_check.py --chunk --path docs/valid
+
+      - name: "Mine Community Error Knowledge"
+        run: |
+          python doc_health_check.py --scrape-forum --offline
+
+      - name: "Upload Quality & Vector Artifacts"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contentops-artifacts
+          path: |
+            lint-report.json
+            data/rag_semantic_chunks.json
+            data/forum_scraped_errors.json

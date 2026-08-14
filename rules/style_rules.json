@@ -1,0 +1,97 @@
+{
+  "project_name": "ODrive Docs ContentOps Quality Engine",
+  "version": "1.0.0",
+  "frontmatter": {
+    "required_fields": [
+      "title",
+      "description",
+      "category",
+      "firmware_version",
+      "status",
+      "last_reviewed"
+    ],
+    "allowed_categories": [
+      "Core Architecture",
+      "Hardware Configuration",
+      "Communication Protocols",
+      "Diagnostics & Troubleshooting",
+      "API Reference"
+    ],
+    "allowed_statuses": [
+      "draft",
+      "reviewed",
+      "production",
+      "deprecated"
+    ],
+    "date_format": "^\\d{4}-\\d{2}-\\d{2}$"
+  },
+  "inclusive_language": [
+    {
+      "pattern": "\\bmaster[\\s_-]?slave\\b",
+      "replacement": "primary/secondary (or controller/target)",
+      "reason": "Non-inclusive terminology. Use primary/secondary, controller/target, or leader/follower.",
+      "severity": "error"
+    },
+    {
+      "pattern": "\\bblacklist\\b",
+      "replacement": "blocklist",
+      "reason": "Non-inclusive terminology. Use blocklist or deny list.",
+      "severity": "error"
+    },
+    {
+      "pattern": "\\bwhitelist\\b",
+      "replacement": "allowlist",
+      "reason": "Non-inclusive terminology. Use allowlist or permit list.",
+      "severity": "error"
+    },
+    {
+      "pattern": "\\bman-in-the-middle\\b",
+      "replacement": "adversary-in-the-middle (or machine-in-the-middle)",
+      "reason": "Non-inclusive terminology. Use on-path attack or adversary-in-the-middle.",
+      "severity": "warning"
+    },
+    {
+      "pattern": "\\bdummy\\s+value\\b",
+      "replacement": "placeholder value (or sample value)",
+      "reason": "Vague and non-inclusive terminology. Use placeholder or sample value.",
+      "severity": "warning"
+    }
+  ],
+  "weak_phrases": [
+    {
+      "pattern": "\\bclick\\s+here\\b",
+      "replacement": "Descriptive link text (e.g., 'View the CAN Protocol Guide')",
+      "reason": "Anti-pattern for accessibility and SEO. Links should describe the target destination.",
+      "severity": "error"
+    },
+    {
+      "pattern": "\\b(simply|just|obviously|easy to use|very easily|as you know)\\b",
+      "replacement": "Direct imperative action (e.g., 'Run the command' instead of 'Simply run the command')",
+      "reason": "Subjective fluff undermines technical authority and alienates beginners.",
+      "severity": "warning"
+    },
+    {
+      "pattern": "\\bplease note that\\b",
+      "replacement": "Use an alert callout block (e.g. '> [!NOTE]') or state the fact directly.",
+      "reason": "Wordy conversational filler.",
+      "severity": "warning"
+    },
+    {
+      "pattern": "\\bas mentioned above\\b",
+      "replacement": "Direct cross-reference link with section anchor.",
+      "reason": "Ambiguous spatial reference; unhelpful in modular and chunked documentation.",
+      "severity": "warning"
+    }
+  ],
+  "structural_rules": {
+    "disallow_heading_skips": true,
+    "require_code_block_language": true,
+    "max_heading_length": 80,
+    "min_word_count": 50
+  },
+  "ai_editorial_guidelines": {
+    "voice": "imperative, concise, authoritative, professional",
+    "audience": "Robotics engineers, embedded firmware developers, mechatronics technicians",
+    "forbidden_patterns": ["passive voice", "conversational filler", "unexplained acronyms"]
+  }
+}

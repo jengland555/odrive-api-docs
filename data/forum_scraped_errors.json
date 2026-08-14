@@ -1,0 +1,61 @@
+{
+  "source": "ODrive Discourse Community (discourse.odriverobotics.com)",
+  "total_threads_mined": 5,
+  "error_threads": [
+    {
+      "id": 1042,
+      "title": "ERROR_DRV_FAULT when starting motor closed-loop control on ODrive v3.6",
+      "url": "https://discourse.odriverobotics.com/t/error-drv-fault-when-starting-motor/1042",
+      "error_code": "ERROR_DRV_FAULT",
+      "affected_hardware": "ODrive v3.6 56V / D5065 270KV Motor",
+      "symptom": "Motor emits a high pitch whine during calibration and trips DRV fault immediately on closed loop request.",
+      "root_cause": "Phase wire bullet connectors had high resistance / cold solder joint causing excessive VDS drop across low-side MOSFETs.",
+      "solution": "Re-soldered phase wires, separated encoder lines from high-current motor phases to eliminate capacitive crosstalk, and increased current_lim_margin to 8.0A.",
+      "verified_code_fix": "odrv0.axis0.motor.config.current_lim_margin = 8.0\nodrv0.save_configuration()"
+    },
+    {
+      "id": 2188,
+      "title": "ERROR_PHASE_RESISTANCE_OUT_OF_RANGE during motor calibration",
+      "url": "https://discourse.odriverobotics.com/t/error-phase-resistance-out-of-range/2188",
+      "error_code": "ERROR_PHASE_RESISTANCE_OUT_OF_RANGE",
+      "affected_hardware": "Gimbal Motor / High-resistance drone motor (0.8 Ohms)",
+      "symptom": "Axis calibration fails with phase resistance error on 24V power supply.",
+      "root_cause": "The default resistance_calib_max_voltage of 2.0V is insufficient to drive 10A calibration current through high-resistance gimbal windings.",
+      "solution": "Set motor_type to MOTOR_TYPE_GIMBAL or increase resistance_calib_max_voltage to 4.0V.",
+      "verified_code_fix": "odrv0.axis0.motor.config.resistance_calib_max_voltage = 4.0\nodrv0.save_configuration()"
+    },
+    {
+      "id": 3491,
+      "title": "ERROR_INDEX_NOT_FOUND_YET with AMT102 incremental encoder",
+      "url": "https://discourse.odriverobotics.com/t/error-index-not-found-yet/3491",
+      "error_code": "ERROR_INDEX_NOT_FOUND_YET",
+      "affected_hardware": "CUI AMT102-V Capacitive Encoder",
+      "symptom": "Encoder search rotates one full turn and throws INDEX_NOT_FOUND_YET error.",
+      "root_cause": "DIP switch CPR setting on AMT102 did not match encoder.config.cpr in software (DIP was 2048, config was 8192).",
+      "solution": "Match CPR setting (4x count = 8192 for 2048 PPR) and ensure 22nF capacitor filter is present on index line.",
+      "verified_code_fix": "odrv0.axis0.encoder.config.cpr = 8192\nodrv0.axis0.encoder.config.use_index = True\nodrv0.save_configuration()"
+    },
+    {
+      "id": 4820,
+      "title": "ERROR_DC_BUS_OVER_VOLTAGE during high deceleration stopping",
+      "url": "https://discourse.odriverobotics.com/t/error-dc-bus-over-voltage/4820",
+      "error_code": "ERROR_DC_BUS_OVER_VOLTAGE",
+      "affected_hardware": "ODrive v3.6 56V / 48V Bench Power Supply",
+      "symptom": "Drive cuts out and power supply shuts down when commanding rapid deceleration from 50 turns/s.",
+      "root_cause": "Regenerative kinetic energy is pumped back onto the DC bus, tripping power supply over-voltage protection because brake resistor was disabled.",
+      "solution": "Install 50W 2 Ohm power resistor across AUX port and enable brake resistor in configuration.",
+      "verified_code_fix": "odrv0.config.enable_brake_resistor = True\nodrv0.config.brake_resistance = 2.0\nodrv0.save_configuration()"
+    },
+    {
+      "id": 5112,
+      "title": "Axis stuck in IDLE, returns NOT_CALIBRATED when requesting CLOSED_LOOP_CONTROL",
+      "url": "https://discourse.odriverobotics.com/t/axis-stuck-in-idle-not-calibrated/5112",
+      "error_code": "ProcedureResult.DISARM_ERROR",
+      "affected_hardware": "All ODrive Controller Revisions",
+      "symptom": "Running requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL does nothing, state remains AXIS_STATE_IDLE.",
+      "root_cause": "ODrive was rebooted without saving pre_calibrated flags, losing calibration offsets from previous run.",
+      "solution": "Set motor and encoder pre_calibrated flags to True, save configuration to flash, and reboot.",
+      "verified_code_fix": "odrv0.axis0.motor.config.pre_calibrated = True\nodrv0.axis0.encoder.config.pre_calibrated = True\nodrv0.save_configuration()\nodrv0.reboot()"
+    }
+  ]
+}
