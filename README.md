@@ -75,8 +75,8 @@ This repository uses real-world mechatronics and motor control documentation as 
 ### 1. Installation
 Clone the repository and install the lightweight dependencies:
 ```bash
-git clone https://github.com/jengland555/doc-ops-linter.git
-cd doc-ops-linter
+git clone https://github.com/jengland555/odrive-api-docs.git
+cd odrive-api-docs
 pip install -r requirements.txt
 ```
 
