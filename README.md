@@ -22,8 +22,9 @@ flowchart TD
         B --> C[1. YAML Frontmatter Validator]
         B --> D[2. Link & Anchor Integrity Checker]
         B --> E[3. Style & Inclusive Language Linter]
-        B --> F[4. AI Tone & Imperative Sanitizer]
-        B --> G[5. H2/H3 Semantic Chunker]
+        B --> F[4. Firmware Enum & Bitfield Validator]
+        B --> P[5. AI Tone & Imperative Sanitizer]
+        B --> G[6. H2/H3 Semantic Chunker]
     end
     
     subgraph Community Data Mining
@@ -32,7 +33,7 @@ flowchart TD
         J -->|Enrich Troubleshooting Docs| A
     end
     
-    C & D & E & F --> K[Rich Terminal Dashboard]
+    C & D & E & F & P --> K[Rich Terminal Dashboard]
     G --> L[data/rag_semantic_chunks.json]
     
     K -->|Exit Code 0| M[✅ CI/CD Pipeline Passes]
@@ -188,11 +189,11 @@ python doc_health_check.py --scrape-forum --offline
 
 ## 🎓 Standalone Interview Presentation Guide
 
-This repository includes **[`interview_case_study.html`](file:///Users/jennaengland/desktop/GitHub_Stuff/Python_Project/interview_case_study.html)**—an interactive, self-contained educational presentation you can open in any web browser during an interview.
+This repository includes **[`interview_case_study.html`](interview_case_study.html)**—an interactive, self-contained educational presentation you can open in any web browser during an interview.
 
 It covers:
 * The business and engineering case for Docs-as-Code.
-* Step-by-step code walkthroughs of the 5-stage validation engine.
+* Step-by-step code walkthroughs of the 6-stage validation engine.
 * Interactive comparisons between naive character chunking and heading-based semantic slicing.
 * Pre-formatted **STAR Method** (Situation, Task, Action, Result) interview scripts for technical writing leadership roles.
 
