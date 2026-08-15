@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ODrive Docs ContentOps CLI & Health Check Pipeline
+ODrive API Docs — CLI & Health Check Pipeline
 Main entrypoint for linting, semantic chunking, community error mining, and AI tone sanitization.
 
 Author: Jenna England (Senior Technical Writer & Content Architect)
@@ -47,7 +47,7 @@ def collect_markdown_files(target_path: str) -> List[str]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="ODrive Docs ContentOps Quality Engine: Docs-as-Code Linter, Chunker & AI Sanitizer."
+        description="ODrive API Docs: Docs-as-Code Linter, Chunker & AI Sanitizer."
     )
     parser.add_argument(
         "--path", "-p",

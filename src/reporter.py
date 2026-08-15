@@ -20,7 +20,7 @@ class Reporter:
     def __init__(self):
         self.console = Console() if HAS_RICH else None
 
-    def print_header(self, title: str = "ODrive Docs ContentOps Engine"):
+    def print_header(self, title: str = "ODrive API Docs"):
         if HAS_RICH:
             self.console.print(Panel.fit(
                 f"[bold cyan]{title}[/bold cyan]\n[dim]Docs-as-Code Quality Gating, Style Enforcement & AI Tone Pipeline[/dim]",

@@ -1,4 +1,4 @@
-# ⚙️ ODrive Docs ContentOps Quality Engine & AI Sanitizer
+# ⚙️ ODrive API Docs
 > **A Python-Powered Docs-as-Code Pipeline for Mechatronics & API Documentation**  
 > *Automated Taxonomy Validation, Heading-Based Semantic Chunking, Inclusive Language Enforcement, and Community Knowledge Mining.*
 
@@ -116,7 +116,7 @@ python doc_health_check.py --scrape-forum --offline
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                 ODrive Docs ContentOps Engine                          ┃
+┃                            ODrive API Docs                             ┃
 ┃      Docs-as-Code Quality Gating, Style Enforcement & AI Tone Pipeline ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 

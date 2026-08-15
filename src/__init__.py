@@ -1,5 +1,5 @@
 """
-ODrive Docs ContentOps Engine
+ODrive API Docs
 A modern Docs-as-Code linter, AI tone sanitizer, semantic chunker, and forum context extractor.
 """
 
