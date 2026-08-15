@@ -45,3 +45,6 @@ ENV/
 # Temporary scratch & test artifacts
 scratch/
 .pytest_cache/
+
+# Local-only interview prep material (not part of the public deliverable)
+interview_case_study.html

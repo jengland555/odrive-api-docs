@@ -189,7 +189,7 @@ python doc_health_check.py --scrape-forum --offline
 
 ## 🎓 Standalone Interview Presentation Guide
 
-This repository includes **[`interview_case_study.html`](interview_case_study.html)**—an interactive, self-contained educational presentation you can open in any web browser during an interview.
+The project also ships with **`interview_case_study.html`**—an interactive, self-contained educational presentation you can open in any web browser during an interview. It's a local-only companion file (excluded from version control) rather than part of the published repository.
 
 It covers:
 * The business and engineering case for Docs-as-Code.
