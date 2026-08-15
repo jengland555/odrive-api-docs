@@ -769,9 +769,12 @@ print(f"Dispatched CAN position frame: 0x{can_id:03X}")</code></pre>
         </div>
 
         <h1>ODrive Error Reference, Root Cause Analysis & Community Diagnostics</h1>
-        <p>When an ODrive encounters an electrical fault or protocol violation, the controller immediately disengages closed-loop control and latches error flags in the active register bank.</p>
+        <p>When an ODrive encounters an electrical fault, physical constraint, or protocol violation, the controller immediately disengages closed-loop control and latches error flags in the active register bank.</p>
 
         <h2>Critical System & Axis Error Catalog</h2>
+
+        <h3>Hardware & Electrical Errors</h3>
+        <p><code>ODrive.Error</code> bitfield, read at <code>odrv0.axis0.active_errors</code>.</p>
         <div class="table-box">
           <table>
             <thead>
@@ -779,34 +782,82 @@ print(f"Dispatched CAN position frame: 0x{can_id:03X}")</code></pre>
             </thead>
             <tbody>
               <tr>
-                <td><code>ERROR_DRV_FAULT</code></td>
-                <td><code>0x00000008</code></td>
-                <td>DRV8301 gate driver fault (short circuit, VDS drop, or loose bullet connector).</td>
+                <td><code>ODRIVE_ERROR_DRV_FAULT</code></td>
+                <td><code>0x00000020</code></td>
+                <td>Gate driver fault (short circuit, VDS drop, or loose bullet connector).</td>
                 <td>Re-solder motor connectors, shield encoder lines from motor phases, set <code>current_lim_margin = 8.0</code>.</td>
               </tr>
               <tr>
-                <td><code>ERROR_PHASE_RESISTANCE_OUT_OF_RANGE</code></td>
-                <td><code>0x00000001</code></td>
-                <td>Measured resistance exceeds expected limits or phase disconnected.</td>
-                <td>Increase <code>resistance_calib_max_voltage</code> from 2.0V to 4.0V for high-resistance gimbal motors.</td>
-              </tr>
-              <tr>
-                <td><code>ERROR_DC_BUS_OVER_VOLTAGE</code></td>
-                <td><code>0x00000004</code></td>
+                <td><code>ODRIVE_ERROR_DC_BUS_OVER_VOLTAGE</code></td>
+                <td><code>0x00000100</code></td>
                 <td>Regenerative kinetic braking energy returned to power bus without dissipation path.</td>
                 <td>Install 50W 2Ω power brake resistor and enable <code>odrv0.config.enable_brake_resistor = True</code>.</td>
               </tr>
               <tr>
-                <td><code>ERROR_INDEX_NOT_FOUND_YET</code></td>
-                <td><code>0x00000020</code></td>
-                <td>Encoder configured with <code>use_index = True</code> but index pulse was missed.</td>
-                <td>Verify physical encoder CPR DIP switch setting matches <code>encoder.config.cpr</code>.</td>
+                <td><code>ODRIVE_ERROR_DC_BUS_OVER_CURRENT</code></td>
+                <td><code>0x00000400</code></td>
+                <td>DC bus current exceeded the configured hardware limit, often from a shorted phase or undersized supply.</td>
+                <td>Check motor phase wiring for shorts; verify <code>config.dc_max_positive_current</code> matches supply capability.</td>
               </tr>
               <tr>
-                <td><code>ProcedureResult.DISARM_ERROR</code></td>
-                <td><code>0x00000040</code></td>
+                <td><code>ODRIVE_ERROR_CURRENT_LIMIT_VIOLATION</code></td>
+                <td><code>0x00001000</code></td>
+                <td>Commanded current exceeded <code>motor.config.current_lim</code>.</td>
+                <td>Reduce <code>controller.config.vel_gain</code>, or raise <code>current_lim</code> if the motor/inverter can safely handle more current.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Calibration Procedure Failures</h3>
+        <p><code>ODrive.ProcedureResult</code> — not a bitfield; a calibration sequence returns exactly one value, read at <code>odrv0.axis0.procedure_result</code>.</p>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr><th>Result Enum</th><th>Value</th><th>Root Cause</th><th>Community-Verified Solution</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PROCEDURE_RESULT_PHASE_RESISTANCE_OUT_OF_RANGE</code></td>
+                <td><code>6</code></td>
+                <td>Measured resistance exceeds expected limits or phase disconnected.</td>
+                <td>Increase <code>resistance_calib_max_voltage</code> from 2.0V to 4.0V for high-resistance gimbal motors.</td>
+              </tr>
+              <tr>
+                <td><code>PROCEDURE_RESULT_PHASE_INDUCTANCE_OUT_OF_RANGE</code></td>
+                <td><code>7</code></td>
+                <td>Measured inductance is out of expected physical bounds (1e-6 to 1e-3 H).</td>
+                <td>Ensure the motor shaft is free to spin during electrical measurement; check phase wire continuity.</td>
+              </tr>
+              <tr>
+                <td><code>PROCEDURE_RESULT_POLE_PAIR_CPR_MISMATCH</code></td>
+                <td><code>5</code></td>
+                <td>Calibrated count delta does not match expected electrical angle counts per revolution.</td>
+                <td>Recalculate physical rotor pole pairs (N_magnets / 2) and ensure mechanical coupling has zero backlash.</td>
+              </tr>
+              <tr>
+                <td><code>PROCEDURE_RESULT_DISARMED</code> / <code>PROCEDURE_RESULT_NOT_CALIBRATED</code></td>
+                <td><code>3</code> / <code>14</code></td>
                 <td>Axis drops to IDLE when requesting closed loop; calibration was not saved.</td>
                 <td>Set <code>pre_calibrated = True</code> on motor and encoder, run <code>odrv0.save_configuration()</code> and reboot.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Sensor & Encoder Errors</h3>
+        <p><code>ODrive.ComponentStatus</code>, read at <code>odrv0.axis0.encoder.status</code>.</p>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr><th>Status Enum</th><th>Value</th><th>Root Cause</th><th>Community-Verified Solution</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>COMPONENT_STATUS_INDEX_NOT_FOUND</code></td>
+                <td><code>12</code></td>
+                <td>Encoder configured with <code>use_index = True</code> but index pulse was missed.</td>
+                <td>Verify physical encoder CPR DIP switch setting matches <code>encoder.config.cpr</code>.</td>
               </tr>
             </tbody>
           </table>

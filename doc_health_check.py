@@ -21,6 +21,7 @@ from typing import List, Dict, Any
 from src.frontmatter_checker import FrontmatterValidator
 from src.link_checker import LinkChecker
 from src.style_linter import StyleLinter
+from src.enum_validator import EnumValidator
 from src.ai_sanitizer import AISanitizer
 from src.chunker import SemanticChunker
 from src.forum_scraper import ODriveForumScraper
@@ -133,6 +134,7 @@ def main():
     frontmatter_validator = FrontmatterValidator(rules)
     link_checker = LinkChecker(offline=args.offline)
     style_linter = StyleLinter(rules)
+    enum_validator = EnumValidator()
     ai_sanitizer = AISanitizer() if args.ai_review else None
 
     all_issues = []
@@ -163,7 +165,11 @@ def main():
         style_issues = style_linter.validate(filepath, markdown, line_offset=0)
         all_issues.extend(style_issues)
 
-        # Step 4: Optional AI Review
+        # Step 4: ODrive Firmware Enum & Bitfield Validation (vs. real ODriveArduino library)
+        enum_issues = enum_validator.validate(filepath, markdown, line_offset=0)
+        all_issues.extend(enum_issues)
+
+        # Step 5: Optional AI Review
         if args.ai_review and ai_sanitizer:
             print(f"\n🤖 Running AI Tone & Voice Analysis on {os.path.basename(filepath)}...")
             ai_result = ai_sanitizer.review_document(filepath, markdown)

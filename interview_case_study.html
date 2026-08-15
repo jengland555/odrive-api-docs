@@ -471,20 +471,24 @@
         <span class="nav-step-number">5</span>
         <span>Link & Anchor Integrity</span>
       </li>
-      <li class="nav-item" data-step="ai-sanitizer">
+      <li class="nav-item" data-step="enum-validation">
         <span class="nav-step-number">6</span>
+        <span>Firmware Enum Validator</span>
+      </li>
+      <li class="nav-item" data-step="ai-sanitizer">
+        <span class="nav-step-number">7</span>
         <span>AI Tone & Voice Pipeline</span>
       </li>
       <li class="nav-item" data-step="chunking">
-        <span class="nav-step-number">7</span>
+        <span class="nav-step-number">8</span>
         <span>H2/H3 Semantic Chunking</span>
       </li>
       <li class="nav-item" data-step="scraping">
-        <span class="nav-step-number">8</span>
+        <span class="nav-step-number">9</span>
         <span>Forum Error Mining</span>
       </li>
       <li class="nav-item" data-step="cicd">
-        <span class="nav-step-number">9</span>
+        <span class="nav-step-number">10</span>
         <span>CI/CD Quality Gating</span>
       </li>
       <li class="nav-item" data-step="interview-qa">
@@ -613,8 +617,8 @@
         </div>
         <div class="flow-arrow">▼</div>
         <div class="flow-node">
-          <span class="flow-node-title">🧪 5-Stage Modular Validation Suite</span>
-          <span class="flow-node-detail">Frontmatter + Links + Style Rules + AI Sanitizer + Chunker</span>
+          <span class="flow-node-title">🧪 6-Stage Modular Validation Suite</span>
+          <span class="flow-node-detail">Frontmatter + Links + Style Rules + Firmware Enum Validator + AI Sanitizer + Chunker</span>
         </div>
         <div class="flow-arrow">▼</div>
         <div class="flow-node">
@@ -764,14 +768,87 @@ tags: ["axis", "state-machine", "calibration", "closed-loop"]
 
       <div class="step-actions">
         <button class="btn btn-secondary" onclick="navigateToStep('editorial')">← Previous</button>
+        <button class="btn btn-primary" onclick="navigateToStep('enum-validation')">Next: Firmware Enum Validator →</button>
+      </div>
+    </section>
+
+    <!-- Step 6: Firmware Enum & Bitfield Validator -->
+    <section id="step-enum-validation" class="step-section">
+      <div class="step-header">
+        <div class="step-tag">Step 4 in Pipeline</div>
+        <h2 class="step-title">ODrive Firmware Enum & Bitfield Validator</h2>
+        <p class="step-description">
+          Catching the failure mode link and style checkers can't: documentation that reads perfectly but describes an API that no longer exists.
+        </p>
+      </div>
+
+      <div class="callout interview-tip">
+        <div class="callout-title">🔍 A Real Bug, Found and Fixed:</div>
+        <div class="callout-text">
+          <em>"I installed <code>arduino-cli</code> and the official <a href="https://github.com/odriverobotics/ODriveArduino" target="_blank" rel="noopener">ODriveArduino</a> library, then compiled small test sketches that referenced every enum name used in our docs — a real, ground-truth compile check instead of trusting the prose. The axis-state doc compiled clean. The error-reference doc failed outright: all 7 of its error names were stale, pre-refactor terminology that no longer exists in the current library, and two rows even claimed duplicate bitfield values internally."</em>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Documented (Before)</th>
+              <th>Verified Against Real Library (After)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ERROR_DRV_FAULT</code> = <code>0x00000008</code></td>
+              <td><code>ODRIVE_ERROR_DRV_FAULT</code> = <code>0x00000020</code></td>
+            </tr>
+            <tr>
+              <td><code>ERROR_DC_BUS_OVER_VOLTAGE</code> = <code>0x00000004</code></td>
+              <td><code>ODRIVE_ERROR_DC_BUS_OVER_VOLTAGE</code> = <code>0x00000100</code></td>
+            </tr>
+            <tr>
+              <td><code>ERROR_CPR_POLEPAIRS_MISMATCH</code> = <code>0x00000002</code></td>
+              <td><code>PROCEDURE_RESULT_POLE_PAIR_CPR_MISMATCH</code> = <code>5</code></td>
+            </tr>
+            <tr>
+              <td><code>ERROR_UNSTABLE_GAIN</code> = <code>0x00000004</code></td>
+              <td><em>Removed — no equivalent in the current library</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">1. Ground-Truth Reference</div>
+          <div class="card-body">
+            <code>rules/odrive_enum_reference.json</code> vendors ~90 enum members extracted directly from the ODriveArduino library headers — offline and pure-Python, so CI never needs Arduino tooling installed.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">2. Two Failure Modes Detected</div>
+          <div class="card-body">
+            <code>src/enum_validator.py</code> flags <code>unknown_odrive_enum</code> (name doesn't exist, with a fuzzy-match suggestion) and <code>odrive_enum_value_mismatch</code> (name is real, value is wrong).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">3. Wired Into the Existing Gate</div>
+          <div class="card-body">
+            Runs as pipeline step 4 by default — no new CLI flag, no CI changes needed. The existing <code>--strict</code> run in <code>doc-ci.yml</code> now enforces it automatically.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary" onclick="navigateToStep('links')">← Previous</button>
         <button class="btn btn-primary" onclick="navigateToStep('ai-sanitizer')">Next: AI Tone Pipeline →</button>
       </div>
     </section>
 
-    <!-- Step 6: AI Sanitizer -->
+    <!-- Step 7: AI Sanitizer -->
     <section id="step-ai-sanitizer" class="step-section">
       <div class="step-header">
-        <div class="step-tag">Step 4 in Pipeline</div>
+        <div class="step-tag">Step 5 in Pipeline</div>
         <h2 class="step-title">AI Tone & Voice Sanitizer (Gemini Integration)</h2>
         <p class="step-description">
           Using Large Language Models to enforce imperative technical voice and eliminate passive phrasing.
@@ -811,15 +888,15 @@ tags: ["axis", "state-machine", "calibration", "closed-loop"]
       </div>
 
       <div class="step-actions">
-        <button class="btn btn-secondary" onclick="navigateToStep('links')">← Previous</button>
+        <button class="btn btn-secondary" onclick="navigateToStep('enum-validation')">← Previous</button>
         <button class="btn btn-primary" onclick="navigateToStep('chunking')">Next: H2/H3 Semantic Chunking →</button>
       </div>
     </section>
 
-    <!-- Step 7: Chunking -->
+    <!-- Step 8: Chunking -->
     <section id="step-chunking" class="step-section">
       <div class="step-header">
-        <div class="step-tag">Step 5 in Pipeline</div>
+        <div class="step-tag">Step 6 in Pipeline</div>
         <h2 class="step-title">H2/H3 Semantic Chunking for AI & RAG</h2>
         <p class="step-description">
           Bridging technical writing structure and AI retrieval: slicing documents at logical conceptual task boundaries.
@@ -851,10 +928,10 @@ tags: ["axis", "state-machine", "calibration", "closed-loop"]
       </div>
     </section>
 
-    <!-- Step 8: Scraping -->
+    <!-- Step 9: Scraping -->
     <section id="step-scraping" class="step-section">
       <div class="step-header">
-        <div class="step-tag">Step 6 in Pipeline</div>
+        <div class="step-tag">Step 7 in Pipeline</div>
         <h2 class="step-title">ODrive Forum Scraping & Error Mining</h2>
         <p class="step-description">
           Mining developer support communities to turn unstructured troubleshooting threads into structured API documentation.
@@ -898,10 +975,10 @@ tags: ["axis", "state-machine", "calibration", "closed-loop"]
       </div>
     </section>
 
-    <!-- Step 9: CI/CD -->
+    <!-- Step 10: CI/CD -->
     <section id="step-cicd" class="step-section">
       <div class="step-header">
-        <div class="step-tag">Step 7 in Pipeline</div>
+        <div class="step-tag">Step 8 in Pipeline</div>
         <h2 class="step-title">Continuous Integration & GitHub Actions Gating</h2>
         <p class="step-description">
           Automating quality gating on every Git push and pull request.
@@ -967,6 +1044,16 @@ jobs:
         </div>
       </div>
 
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">Q: "Tell me about a documentation bug you found and how you verified it."</div>
+        <div class="card-body">
+          <strong>Situation:</strong> Our error-reference doc read cleanly and passed every existing lint check, but I suspected its enum names might have drifted from real firmware after a library refactor.<br>
+          <strong>Task:</strong> Prove — not guess — whether the documented API still matched reality, then prevent the same drift from recurring silently.<br>
+          <strong>Action:</strong> Installed the official ODriveArduino library via <code>arduino-cli</code> and compiled test sketches referencing every enum name in the docs as ground truth. The error-reference doc failed to compile — 7 stale names, plus internally duplicate bitfield values. I rewrote the doc against the real API, then built <code>src/enum_validator.py</code>, a permanent offline check (vendoring the library's enum table as JSON) wired into the existing CI gate so this class of bug can never ship silently again.<br>
+          <strong>Result:</strong> Fixed a real accuracy bug in "production" docs and converted a one-time manual verification into an automated, self-enforcing quality gate.
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">Q: "How do you ensure documentation addresses real developer pain points?"</div>
         <div class="card-body">
@@ -1018,7 +1105,7 @@ jobs:
     });
 
     // Keyboard navigation (Left / Right arrow keys)
-    const stepOrder = ['overview', 'four-pillars', 'architecture', 'frontmatter', 'editorial', 'links', 'ai-sanitizer', 'chunking', 'scraping', 'cicd', 'interview-qa'];
+    const stepOrder = ['overview', 'four-pillars', 'architecture', 'frontmatter', 'editorial', 'links', 'enum-validation', 'ai-sanitizer', 'chunking', 'scraping', 'cicd', 'interview-qa'];
     
     document.addEventListener('keydown', (e) => {
       const activeNav = document.querySelector('.nav-item.active');

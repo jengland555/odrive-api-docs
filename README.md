@@ -178,7 +178,8 @@ python doc_health_check.py --scrape-forum --offline
 │   ├── forum_scraped_errors.json      # Mined community error threads
 │   └── rag_semantic_chunks.json       # Generated semantic chunks with metadata
 ├── doc_health_check.py                # Main CLI entrypoint
-├── interview_case_study.html          # Interactive educational guide & interview presentation
+├── docs.html                          # Interactive API Reference documentation portal
+├── interview_case_study.html          # Educational guide & interview presentation
 ├── requirements.txt                   # Project dependencies
 └── README.md                          # Portfolio centerpiece documentation
 ```

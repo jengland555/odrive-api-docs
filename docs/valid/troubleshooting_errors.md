@@ -16,24 +16,34 @@ When an ODrive encounters an electrical fault, physical constraint, or protocol 
 
 ## Critical System & Axis Error Catalog
 
-The table below catalogs high-frequency errors, their hardware root causes, and community-verified remediation protocols.
+The table below catalogs high-frequency errors, their hardware root causes, and community-verified remediation protocols. Every enum name and value below is verified against the official [ODriveArduino](https://github.com/odriverobotics/ODriveArduino) library (`ODriveEnums.h`, v0.10.9) — current firmware reports these across three distinct enums rather than one flat bitfield, so pick the right table for the symptom you're seeing.
 
-### Hardware & Electrical Inverter Errors
-
-| Error Enum | Bitfield Value | Underlying Cause | Community-Verified Remediation |
-| :--- | :--- | :--- | :--- |
-| `ERROR_DRV_FAULT` | `0x00000008` | DRV8301 gate driver fault (short circuit, VDS overcurrent, or supply dip). | Inspect phase motor solder joints for shorts; ensure motor cables are separated from low-voltage encoder wiring. |
-| `ERROR_PHASE_RESISTANCE_OUT_OF_RANGE` | `0x00000001` | Measured resistance exceeds bounds or motor phase disconnected during calibration. | Verify all three motor bullet connectors; increase `resistance_calib_max_voltage` from $2.0\text{V}$ to $4.0\text{V}$ for high-resistance windings. |
-| `ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE` | `0x00000002` | Measured inductance is out of expected physical bounds ($10^{-6}$ to $10^{-3}\text{ H}$). | Ensure the motor shaft is free to spin during electrical measurement; check phase wire continuity. |
-| `ERROR_DC_BUS_OVER_VOLTAGE` | `0x00000004` | Regenerative braking energy returned to DC bus without dissipation path. | Connect a $50\text{W}$ $2\Omega$ power brake resistor and set `odrv0.config.enable_brake_resistor = True`. |
-
-### Sensor & Encoder Errors
+### Hardware & Electrical Errors (`ODrive.Error` bitfield — `odrv0.axis0.active_errors`)
 
 | Error Enum | Bitfield Value | Underlying Cause | Community-Verified Remediation |
 | :--- | :--- | :--- | :--- |
-| `ERROR_INDEX_NOT_FOUND_YET` | `0x00000020` | Encoder configured with `use_index = True` but index pulse was not detected during search sweep. | Verify encoder CPR setting in `encoder.config.cpr`; check shielding on index line (`Z` pin). |
-| `ERROR_CPR_POLEPAIRS_MISMATCH` | `0x00000002` | Calibrated count delta does not match expected electrical angle counts per revolution. | Recalculate physical rotor pole pairs ($N_{\text{magnets}} / 2$) and ensure mechanical coupling has zero backlash. |
-| `ERROR_UNSTABLE_GAIN` | `0x00000004` | PLL bandwidth is configured too high for encoder resolution, causing velocity estimator jitter. | Decrease `encoder.config.bandwidth` from default $1000$ to $500\text{ rad/s}$. |
+| `ODRIVE_ERROR_DRV_FAULT` | `0x00000020` | Gate driver fault (short circuit, VDS overcurrent, or supply dip). | Inspect phase motor solder joints for shorts; ensure motor cables are separated from low-voltage encoder wiring. |
+| `ODRIVE_ERROR_DC_BUS_OVER_VOLTAGE` | `0x00000100` | Regenerative braking energy returned to DC bus without dissipation path. | Connect a $50\text{W}$ $2\Omega$ power brake resistor and set `odrv0.config.enable_brake_resistor = True`. |
+| `ODRIVE_ERROR_DC_BUS_OVER_CURRENT` | `0x00000400` | DC bus current exceeded the configured hardware limit, often from a shorted phase or undersized supply. | Check motor phase wiring for shorts; verify `config.dc_max_positive_current` matches supply capability. |
+| `ODRIVE_ERROR_CURRENT_LIMIT_VIOLATION` | `0x00001000` | Commanded current exceeded `motor.config.current_lim`. | Reduce `controller.config.vel_gain`, or raise `current_lim` if the motor and inverter can safely handle more current. |
+
+### Calibration Procedure Failures (`ODrive.ProcedureResult` — `odrv0.axis0.procedure_result`)
+
+These are **not** bitfield errors — a calibration sequence returns exactly one `ProcedureResult` value on completion.
+
+| Result Enum | Integer Value | Underlying Cause | Community-Verified Remediation |
+| :--- | :--- | :--- | :--- |
+| `PROCEDURE_RESULT_PHASE_RESISTANCE_OUT_OF_RANGE` | `6` | Measured resistance exceeds bounds or motor phase disconnected during calibration. | Verify all three motor bullet connectors; increase `resistance_calib_max_voltage` from $2.0\text{V}$ to $4.0\text{V}$ for high-resistance windings. |
+| `PROCEDURE_RESULT_PHASE_INDUCTANCE_OUT_OF_RANGE` | `7` | Measured inductance is out of expected physical bounds ($10^{-6}$ to $10^{-3}\text{ H}$). | Ensure the motor shaft is free to spin during electrical measurement; check phase wire continuity. |
+| `PROCEDURE_RESULT_POLE_PAIR_CPR_MISMATCH` | `5` | Calibrated count delta does not match expected electrical angle counts per revolution. | Recalculate physical rotor pole pairs ($N_{\text{magnets}} / 2$) and ensure mechanical coupling has zero backlash. |
+
+### Sensor & Encoder Errors (`ODrive.ComponentStatus` — `odrv0.axis0.encoder.status`)
+
+| Status Enum | Integer Value | Underlying Cause | Community-Verified Remediation |
+| :--- | :--- | :--- | :--- |
+| `COMPONENT_STATUS_INDEX_NOT_FOUND` | `12` | Encoder configured with `use_index = True` but index pulse was not detected during search sweep. | Verify encoder CPR setting in `encoder.config.cpr`; check shielding on index line (`Z` pin). |
+
+> **Note:** older ODrive documentation referenced a standalone `ERROR_UNSTABLE_GAIN` flag. It has no equivalent in the current library — velocity estimator jitter from an overly aggressive PLL bandwidth no longer raises a dedicated flag, so tune it proactively by decreasing `encoder.config.bandwidth` from the default $1000$ to $500\text{ rad/s}$ if you observe noisy velocity feedback.
 
 ---
 
@@ -44,7 +54,7 @@ These step-by-step diagnostic workflows address the most frequently discussed fa
 ### Playbook 1: Resolving `ProcedureResult.DISARM_ERROR` and `NOT_CALIBRATED`
 
 #### Symptom
-The axis refuses to enter `AXIS_STATE_CLOSED_LOOP_CONTROL`, immediately dropping back to `AXIS_STATE_IDLE` with error code `0x40` or `NOT_CALIBRATED`.
+The axis refuses to enter `AXIS_STATE_CLOSED_LOOP_CONTROL`, immediately dropping back to `AXIS_STATE_IDLE` with `PROCEDURE_RESULT_DISARMED` (`3`) or `PROCEDURE_RESULT_NOT_CALIBRATED` (`14`).
 
 #### Step-by-Step Resolution
 1. Run the error dump utility to isolate the sub-module:
